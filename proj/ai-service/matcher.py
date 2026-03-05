@@ -87,7 +87,7 @@ def match_resume_with_jd(resume_text: str, jd_text: str):
     else:
         match_score = round((len(matched) / len(jd_skills)) * 100)
 
-    # 🔹 Step 5: Structured ATS Reasoning (Clean JSON)
+    # 🔹 Step 5: Structured ATS Reasoning (with fallback)
     reasoning_prompt = f"""
 You are an ATS evaluation assistant.
 
@@ -110,24 +110,49 @@ Return ONLY valid JSON:
 }}
 """
 
-    response = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": reasoning_prompt}],
-        temperature=0.2,
-        max_tokens=300
-    )
-
-    content = response.choices[0].message.content.strip()
-    content = re.sub(r"```json", "", content)
-    content = re.sub(r"```", "", content).strip()
-
+    reasoning = {
+        "strengths": [],
+        "weaknesses": [],
+        "final_verdict": ""
+    }
+    
     try:
-        reasoning = json.loads(content)
-    except:
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": reasoning_prompt}],
+            temperature=0.2,
+            max_tokens=300
+        )
+
+        content = response.choices[0].message.content.strip()
+        content = re.sub(r"```json", "", content)
+        content = re.sub(r"```", "", content).strip()
+
+        try:
+            reasoning = json.loads(content)
+        except:
+            reasoning = {
+                "strengths": [],
+                "weaknesses": [],
+                "final_verdict": content
+            }
+    except Exception as e:
+        # Fallback: Generate basic verdict without API
+        print(f"Warning: Could not call Groq API: {str(e)}")
+        strengths = matched if matched else ["No skills matched"]
+        weaknesses = missing if missing else ["All required skills are present"]
+        
+        if match_score >= 80:
+            verdict = f"Strong match ({match_score}%). Candidate has most required skills."
+        elif match_score >= 50:
+            verdict = f"Moderate match ({match_score}%). Candidate has some experience with required skills."
+        else:
+            verdict = f"Weak match ({match_score}%). Candidate is missing significant skills."
+            
         reasoning = {
-            "strengths": [],
-            "weaknesses": [],
-            "final_verdict": content
+            "strengths": strengths,
+            "weaknesses": weaknesses,
+            "final_verdict": verdict
         }
 
     return {

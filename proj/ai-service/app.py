@@ -77,7 +77,10 @@ def match_pdf_jd():
         })
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        import traceback
+        print(f"ERROR in /match-pdf-jd: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({"error": str(e), "type": type(e).__name__}), 500
 
 
 if __name__ == "__main__":
