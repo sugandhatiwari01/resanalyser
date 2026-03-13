@@ -1,98 +1,99 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import Navbar from "./Navbar";
 
-export default function PDFJobMatch() {
-  const [file, setFile] = useState(null);
-  const [jd, setJd] = useState("");
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+export default function PDFJobMatch(){
 
-  const handleMatch = async () => {
-    if (!file) return alert("Upload a resume PDF");
-    if (!jd.trim()) return alert("Paste Job Description");
+const [file,setFile] = useState(null)
+const [jd,setJd] = useState("")
+const [loading,setLoading] = useState(false)
 
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("jd", jd);
+const navigate = useNavigate()
 
-    try {
-      setLoading(true);
-      const res = await api.post("/resume/match-pdf-jd", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+const handleMatch = async()=>{
 
-      setResult(res.data);
-    } catch (err) {
-      console.error(err);
-      alert("ATS Matching failed ❌");
-    } finally {
-      setLoading(false);
-    }
-  };
+if(!file) return alert("Upload resume PDF")
+if(!jd.trim()) return alert("Paste Job Description")
 
-  return (
-    <div style={{ padding: 40 }}>
-      <h2>ATS Resume vs Job Description Matcher</h2>
+const formData = new FormData()
 
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={(e) => setFile(e.target.files[0])}
-      />
+formData.append("file",file)
+formData.append("jd",jd)
 
-      <br /><br />
+try{
 
-      <textarea
-        rows="8"
-        cols="80"
-        placeholder="Paste Job Description here..."
-        value={jd}
-        onChange={(e) => setJd(e.target.value)}
-      />
+setLoading(true)
 
-      <br /><br />
-      <button onClick={handleMatch} disabled={loading}>
-        {loading ? "Analyzing ATS Match..." : "Get Match Score"}
-      </button>
+const res = await api.post(
+"/resume/match-pdf-jd",
+formData,
+{headers:{ "Content-Type":"multipart/form-data"}}
+)
 
-      {result && (
-        <div style={{ marginTop: 30 }}>
-<h3>
-  Match Score: {
-    result?.match_analysis?.match_score
-      ? Math.round(
-          result.match_analysis.match_score <= 1
-            ? result.match_analysis.match_score * 100
-            : result.match_analysis.match_score
-        )
-      : 0
-  }%
-</h3>
-          <h4>Matched Skills</h4>
-          <ul>
-            {result.match_analysis?.matched_skills?.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ul>
+navigate("/results",{state:res.data})
 
-          <h4>Missing Skills</h4>
-          <ul>
-            {result.match_analysis?.missing_skills?.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ul>
+}
+catch(err){
 
-          <h4>Weaknesses</h4>
-          <ul>
-            {result.match_analysis?.weaknesses?.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
+console.error(err)
+alert("Matching failed")
 
-          <h4>Final Verdict</h4>
-          <p>{result.match_analysis?.final_verdict}</p>
-        </div>
-      )}
-    </div>
-  );
+}
+finally{
+
+setLoading(false)
+
+}
+
+}
+
+return(
+
+<>
+
+<Navbar/>
+
+<div className="container center">
+
+<div className="card" style={{textAlign:"center"}}>
+
+<h2>Match Resume With Job Description</h2>
+
+<div className="uploadBox">
+
+<input
+type="file"
+accept=".pdf"
+onChange={(e)=>setFile(e.target.files[0])}
+/>
+
+</div>
+
+<textarea
+rows="8"
+placeholder="Paste Job Description..."
+value={jd}
+onChange={(e)=>setJd(e.target.value)}
+/>
+
+<br/><br/>
+
+<button
+className="button"
+onClick={handleMatch}
+disabled={loading}
+>
+
+{loading ? "Analyzing..." : "Match Score"}
+
+</button>
+
+</div>
+
+</div>
+
+</>
+
+)
 }
