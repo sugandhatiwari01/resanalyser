@@ -1,0 +1,20 @@
+{
+
+  "name": "proj",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "concurrently": "^9.2.1"
+  },
+    "scripts": {
+    "start": "concurrently \"npm run frontend\" \"npm run backend\" \"npm run ai\"",
+    "frontend": "cd front-react && npm run dev",
+    "backend": "cd backend && node server.js",
+    "ai": "cd ai-service && .venv\\Scripts\\python -m uvicorn interview_service:app --reload --port 8001"
+  }
+}
