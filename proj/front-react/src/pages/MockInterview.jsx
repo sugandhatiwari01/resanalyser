@@ -144,11 +144,7 @@ export default function MockInterview() {
           onRecordingComplete={handleRecordingComplete}
           maxSeconds={120}
         />
-<p style={{fontSize:12, color:"red"}}>
-  resumeText: "{resumeText?.slice(0,50)}"
-  <br/>
-  jobDescription: "{jobDescription?.slice(0,50)}"
-</p>
+
         {/* Submit button */}
         {pendingAudio && (
           <button

@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from dotenv import load_dotenv
 import os
-
+from analysis_engine import analyze_answer
 from resume_parser import parse_resume
 from pdf_parser import extract_text_from_pdf
 from matcher import match_resume_with_jd
@@ -54,7 +54,29 @@ def analyze_pdf():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# 🔥 NEW: Interview Answer Analysis
+@app.route("/analyze-answer", methods=["POST"])
+def analyze_interview_answer():
+    try:
+        data = request.get_json()
 
+        transcript = data.get("transcript", "")
+        duration = data.get("duration", 0)
+
+        if not transcript:
+            return jsonify({"error": "Transcript is required"}), 400
+
+        result = analyze_answer(transcript, duration)
+
+        return jsonify({
+            "analysis": result
+        })
+
+    except Exception as e:
+        import traceback
+        print("ERROR in /analyze-answer:", str(e))
+        print(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
 # 🔥 FINAL: Hybrid ATS (PDF + JD)
 @app.route("/match-pdf-jd", methods=["POST"])
 def match_pdf_jd():
