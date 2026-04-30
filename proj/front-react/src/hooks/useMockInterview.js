@@ -6,7 +6,7 @@ import axios from "axios";
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export function useMockInterview() {
-  const [step, setStep] = useState("idle"); 
+  const [step, setStep] = useState("idle");
   // idle → generating → ready → recording → evaluating → done
 
   const [questions, setQuestions] = useState([]);
@@ -15,7 +15,7 @@ export function useMockInterview() {
   const [reportId, setReportId] = useState(null);
   const [aggregateScore, setAggregateScore] = useState(null);
   const [error, setError] = useState(null);
-console.log("API URL:", import.meta.env.VITE_API_URL);
+  console.log("API URL:", import.meta.env.VITE_API_URL);
   // Step 1: Generate questions from resume + JD
   const generateQuestions = useCallback(async (resumeText, jobDescription, numQuestions = 5) => {
     setStep("generating");
@@ -112,4 +112,4 @@ console.log("API URL:", import.meta.env.VITE_API_URL);
     submitAnswer,
     reset,
   };
-}
+} 
