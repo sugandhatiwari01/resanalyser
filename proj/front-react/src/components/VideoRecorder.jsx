@@ -480,19 +480,74 @@ export default function VideoRecorder({ onRecordingComplete, maxSeconds = 120 })
       </div>
 
       {/* ── Buttons ── */}
-      <div style={{ display: "flex", gap: 8 }}>
-        {status === "idle" && <button style={btn("#4f46e5")} onClick={startPreview}>📷 Start Camera</button>}
-        {status === "previewing" && <button style={btn("#dc2626")} onClick={startRecording}>⏺ Start Recording</button>}
-        {status === "recording" && <button style={btn("#d97706")} onClick={stopRecording}>⏹ Stop Recording</button>}
-        {status === "done" && <button style={btn("#475569")} onClick={retry}>🔄 Re-record</button>}
-      </div>
+      <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+
+  {status === "idle" && (
+    <button style={btn("linear-gradient(135deg,#8b5e3c,#a47148)", true)} onClick={startPreview}>
+      🎥 <span>Start Camera</span>
+    </button>
+  )}
+
+  {status === "previewing" && (
+    <button style={btn("linear-gradient(135deg,#dc2626,#ef4444)")} onClick={startRecording}>
+      🔴 <span>Start Recording</span>
+    </button>
+  )}
+
+  {status === "recording" && (
+    <button style={btn("linear-gradient(135deg,#d97706,#f59e0b)")} onClick={stopRecording}>
+      ⏹ <span>Stop Recording</span>
+    </button>
+  )}
+
+  {status === "done" && (
+  <button
+    style={{
+      padding: "14px 26px",
+      borderRadius: "12px",
+      border: "none",
+      cursor: "pointer",
+      fontWeight: 600,
+      fontSize: "15px",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      background: "linear-gradient(135deg,#8b5e3c,#a47148)",
+      color: "white",
+      boxShadow: "0 6px 16px rgba(139,94,60,0.25)",
+      transition: "all 0.25s ease",
+      opacity: 0.95
+    }}
+    onClick={retry}
+  >
+    🔄 <span>Re-record</span>
+  </button>
+)}
+
+</div>
 
       <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.35; }
-        }
-      `}</style>
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  @keyframes pulseGlow {
+    0% {
+      box-shadow: 0 0 0 0 rgba(139, 94, 60, 0.5);
+    }
+    70% {
+      box-shadow: 0 0 0 12px rgba(139, 94, 60, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(139, 94, 60, 0);
+    }
+  }
+
+  button:hover {
+    transform: scale(1.05);
+  }
+`}</style>
     </div>
   );
 }
@@ -503,8 +558,19 @@ const videoStyle = {
   aspectRatio: "16/9", objectFit: "cover", display: "block",
 };
 
-const btn = (bg) => ({
-  padding: "9px 22px", borderRadius: 8, border: "none",
-  cursor: "pointer", fontWeight: 600, fontSize: 14,
-  background: bg, color: "white",
+const btn = (bg, pulse = false) => ({
+  padding: "14px 26px",
+  borderRadius: 12,
+  border: "none",
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: 15,
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  background: bg,
+  color: "white",
+  boxShadow: "0 8px 20px rgba(0,0,0,0.2)",
+  transition: "all 0.25s ease",
+  animation: pulse ? "pulseGlow 1.5s infinite" : "none",
 });

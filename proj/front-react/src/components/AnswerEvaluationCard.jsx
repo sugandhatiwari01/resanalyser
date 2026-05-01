@@ -43,39 +43,40 @@ import { useState } from "react";
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const colors = {
   bg: "#ffffff",
-  surface: "#f8fafc",
-  surfaceAlt: "#f1f5f9",
-  border: "#e2e8f0",
-  borderLight: "#f0f4f8",
-  text: "#0f172a",
-  textMuted: "#64748b",
-  textLight: "#94a3b8",
+  surface: "#faf7f4",
+  surfaceAlt: "#f3ede7",
+  border: "#e6ddd5",
+  borderLight: "#f1e8df",
 
-  success: "#059669",
-  successBg: "#ecfdf5",
-  successBorder: "#a7f3d0",
-  successText: "#065f46",
+  text: "#2d2d2d",
+  textMuted: "#6b6b6b",
+  textLight: "#a0a0a0",
 
-  warning: "#d97706",
-  warningBg: "#fffbeb",
-  warningBorder: "#fde68a",
-  warningText: "#92400e",
+  success: "#1e7e34",
+  successBg: "#e6f4ea",
+  successBorder: "#b7e4c7",
+  successText: "#1e7e34",
 
-  danger: "#dc2626",
-  dangerBg: "#fef2f2",
-  dangerBorder: "#fecaca",
-  dangerText: "#7f1d1d",
+  warning: "#b45309",
+  warningBg: "#fff7ed",
+  warningBorder: "#fcd9b6",
+  warningText: "#b45309",
 
-  info: "#2563eb",
-  infoBg: "#eff6ff",
-  infoBorder: "#bfdbfe",
+  danger: "#b91c1c",
+  dangerBg: "#fdecea",
+  dangerBorder: "#f5c2c7",
+  dangerText: "#b91c1c",
 
-  dark: "#0f1117",
-  darkSurface: "rgba(255,255,255,0.05)",
-  darkBorder: "rgba(255,255,255,0.08)",
-  darkText: "rgba(255,255,255,0.85)",
-  darkMuted: "rgba(255,255,255,0.35)",
-  darkFaint: "rgba(255,255,255,0.18)",
+  info: "#8b5e3c",
+  infoBg: "#fdf6f0",
+  infoBorder: "#ecd8c6",
+
+  dark: "#f8f5f2",
+  darkSurface: "#ffffff",
+  darkBorder: "#e6ddd5",
+  darkText: "#2d2d2d",
+  darkMuted: "#8b8b8b",
+  darkFaint: "#b5b5b5",
 };
 
 const scoreColor = (s) =>
@@ -186,7 +187,7 @@ const GaugeCard = ({ label, value, color, sublabel, subvalue }) => (
       <div style={{ fontSize: 14, fontWeight: 700, color, lineHeight: 1 }}>
         {sublabel}
       </div>
-      <div style={{ fontSize: 10, color: colors.darkFaint, marginTop: 3 }}>
+      <div style={{ fontSize: 11, color: colors.darkFaint, marginTop: 3 }}>
         {subvalue}
       </div>
     </div>
@@ -263,14 +264,15 @@ export default function AnswerEvaluationCard({ answer, index }) {
 
   return (
     <div style={{
-      border: `1px solid ${colors.border}`,
-      borderRadius: 14,
-      padding: 22,
-      marginBottom: 18,
-      background: colors.bg,
-      fontFamily: "'Geist', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)",
-    }}>
+  border: `1px solid ${colors.border}`,
+  borderRadius: 18,
+  padding: 26,
+  marginBottom: 22,
+  background: colors.bg,
+  fontFamily: "'Poppins', sans-serif",
+  boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+  transition: "all 0.3s ease",
+}}>
 
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div style={{
@@ -282,7 +284,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
             flexShrink: 0,
             background: colors.surfaceAlt,
             border: `1px solid ${colors.border}`,
-            borderRadius: 8,
+            borderRadius: 12,
             fontSize: 11, fontWeight: 800,
             color: colors.textMuted,
             padding: "3px 8px",
@@ -292,9 +294,12 @@ export default function AnswerEvaluationCard({ answer, index }) {
             Q{index + 1}
           </span>
           <h4 style={{
-            margin: 0, fontSize: 14, fontWeight: 600,
-            color: colors.text, lineHeight: 1.5,
-          }}>
+  margin: 0,
+  fontSize: 15,
+  fontWeight: 600,
+  color: colors.text,
+  lineHeight: 1.6,
+}}>
             {question}
           </h4>
         </div>
@@ -326,7 +331,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
             display: "inline-block",
             transform: transcriptOpen ? "rotate(90deg)" : "rotate(0deg)",
             transition: "transform 0.2s ease",
-            fontSize: 10,
+            fontSize: 11,
           }}>▶</span>
           📝 Your answer (transcript)
         </button>
@@ -334,7 +339,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
           <p style={{
             background: colors.surface,
             border: `1px solid ${colors.border}`,
-            padding: "10px 14px", borderRadius: 8,
+            padding: "10px 14px", borderRadius: 12,
             fontSize: 13, color: colors.textMuted,
             marginTop: 8, lineHeight: 1.7, marginBottom: 0,
           }}>
@@ -345,10 +350,13 @@ export default function AnswerEvaluationCard({ answer, index }) {
 
       {/* ── Score bars ────────────────────────────────────────────────────── */}
       <div style={{
-        background: colors.surface,
-        border: `1px solid ${colors.borderLight}`,
-        borderRadius: 10, padding: "14px 16px",
-        marginBottom: 14,
+        background: "#fff",
+border: `1px solid ${colors.borderLight}`,
+borderRadius: 12,
+padding: "16px 18px",
+marginBottom: 18,
+width: "100%",
+boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
       }}>
         <ScoreBar label="Technical Knowledge" score={technicalScore || 0} />
         <ScoreBar label="Clarity & Communication" score={clarityScore || 0} />
@@ -400,7 +408,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
           padding: "10px 14px",
           background: colors.infoBg,
           border: `1px solid ${colors.infoBorder}`,
-          borderRadius: 8, margin: "0 0 14px",
+          borderRadius: 12, margin: "0 0 14px",
         }}>
           {cleanFeedback}
         </p>
@@ -409,7 +417,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
       {/* ── Strengths / Improvements ──────────────────────────────────────── */}
       <div style={{
         display: "grid", gridTemplateColumns: "1fr 1fr",
-        gap: 10, marginBottom: 16,
+        gap: 20, marginBottom: 16,
       }}>
         <div style={{
           background: colors.successBg,
@@ -452,14 +460,16 @@ export default function AnswerEvaluationCard({ answer, index }) {
       {/* ══ FACIAL ANALYSIS SECTION ═════════════════════════════════════════ */}
       {hasFace ? (
         <div style={{
-          background: colors.dark,
-          border: `1px solid ${colors.darkBorder}`,
-          borderRadius: 12, padding: 16,
+          background: "#fff",
+border: `1px solid ${colors.border}`,
+borderRadius: 14,
+padding: 18,
+boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
         }}>
           {/* Header */}
           <p style={{
             margin: "0 0 14px",
-            fontSize: 10, fontWeight: 800,
+            fontSize: 11, fontWeight: 800,
             color: colors.darkMuted,
             textTransform: "uppercase",
             letterSpacing: "0.09em",
@@ -523,7 +533,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
                 style={{
                   background: "none", border: "none", cursor: "pointer",
                   display: "flex", alignItems: "center", gap: 6, padding: 0,
-                  fontSize: 10, fontWeight: 700,
+                  fontSize: 11, fontWeight: 700,
                   color: colors.darkMuted,
                   textTransform: "uppercase", letterSpacing: "0.07em",
                 }}
@@ -579,7 +589,7 @@ export default function AnswerEvaluationCard({ answer, index }) {
             <div style={{
               background: "rgba(255,255,255,0.03)",
               border: `1px solid rgba(255,255,255,0.06)`,
-              borderRadius: 8, padding: "10px 14px",
+              borderRadius: 12, padding: "10px 14px",
             }}>
               <p style={{
                 margin: "0 0 7px",

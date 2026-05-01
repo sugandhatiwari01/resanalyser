@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import axios from "axios";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export function useMockInterview() {
   const [step, setStep] = useState("idle");

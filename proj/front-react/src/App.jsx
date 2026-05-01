@@ -11,15 +11,22 @@ function Home() {
   return (
     <div className="app">
       <Navbar />
+
       <div className="hero">
-        <h1>AI Resume ATS Analyzer</h1>
-        <p>
-          Upload your resume and instantly see how well it matches
-          a job description using AI powered ATS analysis.
-        </p>
-        <button className="button" onClick={() => navigate("/pdf-job-match")}>
-          Match Resume With Job Description
-        </button>
+        <div className="heroCard">
+          <h1>AI Resume ATS Analyzer</h1>
+          <p>
+            Upload your resume and instantly discover how well it aligns with
+            your dream job using intelligent ATS analysis.
+          </p>
+
+          <button
+            className="button"
+            onClick={() => navigate("/pdf-job-match")}
+          >
+            Start Matching →
+          </button>
+        </div>
       </div>
     </div>
   );

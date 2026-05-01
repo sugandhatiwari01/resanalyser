@@ -7,8 +7,8 @@ export default function ResultPage() {
   const navigate = useNavigate();
 
   const result = location.state?.match_analysis;
-  const resumeText = location.state?.resume_text;   // we'll pass this from PDFJobMatch
-  const jobDescription = location.state?.jd_text;   // we'll pass this from PDFJobMatch
+  const resumeText = location.state?.resume_text;
+  const jobDescription = location.state?.jd_text;
 
   if (!result) return <h2 style={{ textAlign: "center" }}>No Result</h2>;
 
@@ -19,7 +19,7 @@ export default function ResultPage() {
     { name: "Missing", value: result.missing_skills.length }
   ];
 
-  const COLORS = ["#8b5cf6", "#ff4d6d"];
+  const COLORS = ["#8b5e3c", "#d97706"];
 
   return (
     <>
@@ -27,81 +27,98 @@ export default function ResultPage() {
 
       <div className="results">
 
-        <div className="scoreContainer">
+        {/* TOP SCORE CARD */}
+        <div className="scoreCard">
           <h2>ATS Match Score</h2>
           <h1>{score}%</h1>
+
           <div className="scoreBar">
             <div className="scoreFill" style={{ width: `${score}%` }} />
           </div>
         </div>
 
-        <div className="chartWrapper">
-          <ResponsiveContainer width={400} height={300}>
-            <PieChart>
-              <Pie data={data} dataKey="value" outerRadius={110}>
-                {data.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend verticalAlign="bottom" align="center" iconType="circle" />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        {/* MIDDLE GRID */}
+        <div className="resultGrid">
 
-        <div className="section">
-          <h3>Matched Skills</h3>
-          <div className="skills">
-            {result.matched_skills.map((s, i) => (
-              <span className="tag" key={i}>{s}</span>
-            ))}
+          {/* CHART */}
+          <div className="card">
+            <h3 style={{ textAlign: "center" }}>Skill Distribution</h3>
+            <ResponsiveContainer width="100%" height={280}>
+              <PieChart>
+                <Pie data={data} dataKey="value" outerRadius={100}>
+                  {data.map((entry, index) => (
+                    <Cell key={index} fill={COLORS[index]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        </div>
 
-        <div className="section">
-          <h3>Missing Skills</h3>
-          <div className="skills">
-            {result.missing_skills.map((s, i) => (
-              <span className="tag missing" key={i}>{s}</span>
-            ))}
+          {/* VERDICT */}
+          <div className="card">
+            <h3>Final Verdict</h3>
+            <p>{result.final_verdict}</p>
+
+            <h4 style={{ marginTop: 20 }}>Weaknesses</h4>
+            <ul>
+              {result.weaknesses.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
           </div>
+
         </div>
 
-        <div className="section">
-          <h3>Weaknesses</h3>
-          <ul>
-            {result.weaknesses.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
+        {/* SKILLS */}
+        <div className="skillsGrid">
+
+          <div className="card">
+            <h3>Matched Skills</h3>
+            <div className="skills">
+              {result.matched_skills.map((s, i) => (
+                <span className="tag" key={i}>{s}</span>
+              ))}
+            </div>
+          </div>
+
+          <div className="card">
+            <h3>Missing Skills</h3>
+            <div className="skills">
+              {result.missing_skills.map((s, i) => (
+                <span className="tag missing" key={i}>{s}</span>
+              ))}
+            </div>
+          </div>
+
         </div>
 
-        <div className="section">
-          <h3>Final Verdict</h3>
-          <p>{result.final_verdict}</p>
-        </div>
+        {/* CTA */}
+        <div className="ctaBox">
 
-        {/* ── Mock Interview CTA ── */}
-        <div className="section" style={{ textAlign: "center", marginTop: 32 }}>
-          <h3>Ready to Practice?</h3>
-          <p style={{ color: "#718096", marginBottom: 16 }}>
-            Take an AI mock interview tailored to this job description.
-          </p>
-          <button
-            className="button"
-            onClick={() =>
-             // In ResultPage, the navigate call should be:
-navigate("/mock-interview", {
-  state: {
-    resumeText: location.state?.resume_preview,  // from Flask response
-    jobDescription: location.state?.jd_text,     // from PDFJobMatch
-  }
-})
-            }
-          >
-            🎙️ Start Mock Interview
-          </button>
-        </div>
+  <div className="ctaContent">
+    <h3>🎯 Ready to Practice?</h3>
+    <p>
+      Take an AI mock interview tailored to this job description.
+    </p>
+
+    <button
+      className="button large"
+      onClick={() =>
+        navigate("/mock-interview", {
+          state: {
+            resumeText: location.state?.resume_preview,
+            jobDescription: location.state?.jd_text,
+          }
+        })
+      }
+    >
+      🎙️ Start Mock Interview
+    </button>
+  </div>
+
+</div>
 
       </div>
     </>

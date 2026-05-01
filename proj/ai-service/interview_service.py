@@ -59,12 +59,29 @@ class SaveReportRequest(BaseModel):
 # ─────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────
+import re
+
 def parse_json_response(raw: str):
     cleaned = raw.strip()
+
+    # Remove markdown ``` if present
     if cleaned.startswith("```"):
-        lines   = [l for l in cleaned.split('\n') if not l.strip().startswith("```")]
+        lines = [l for l in cleaned.split('\n') if not l.strip().startswith("```")]
         cleaned = '\n'.join(lines).strip()
-    return json.loads(cleaned)
+
+    # 🔥 Extract JSON safely
+    match = re.search(r'\[.*\]', cleaned, re.DOTALL)
+    if not match:
+        raise ValueError("No valid JSON array found in LLM response")
+
+    json_text = match.group()
+
+    try:
+        return json.loads(json_text)
+    except Exception as e:
+        print("❌ JSON PARSE ERROR")
+        print("RAW OUTPUT:\n", raw)
+        raise e
 
 
 def groq_chat(prompt: str, temperature: float = 0.5) -> str:
@@ -108,9 +125,16 @@ def generate_questions(req: GenerateQuestionsRequest):
     jd_safe     = req.job_description[:2000].replace("```", "")
 
     prompt = f"""
-Generate {req.num_questions} interview questions based on the resume and job description below.
-Return ONLY valid JSON array, no markdown, no explanation:
-[{{"id": 1, "question": "..."}}]
+Generate {req.num_questions} interview questions.
+
+Return ONLY a valid JSON array.
+No explanation. No extra text.
+
+Format EXACTLY like this:
+[
+  {{"id": 1, "question": "Question here"}},
+  {{"id": 2, "question": "Question here"}}
+]
 
 RESUME:
 {resume_safe}
@@ -155,6 +179,7 @@ async def transcribe(audio: UploadFile = File(...)):
 def evaluate_answer(req: EvaluateAnswerRequest):
     try:
         transcript = req.transcript.strip()
+
 
         if not transcript or len(transcript.split()) < 5:
             return {"technicalScore": 0, "clarityScore": 0, "overallScore": 0,

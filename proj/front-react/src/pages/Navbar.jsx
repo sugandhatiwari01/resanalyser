@@ -1,14 +1,36 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-export default function Navbar(){
-return(
+export default function Navbar() {
 
-<div className="navbar">
+  const location = useLocation();
 
-<Link to="/">Home</Link>
-<Link to="/pdf-job-match">ATS Matcher</Link>
+  return (
+    <div className="navbar">
 
-</div>
+      {/* LEFT: BRAND */}
+      <div className="navLeft">
+        <Link to="/" className="logo">
+          ResumeAI
+        </Link>
+      </div>
 
-)
+      {/* RIGHT: LINKS */}
+      <div className="navRight">
+        <Link
+          to="/"
+          className={location.pathname === "/" ? "active" : ""}
+        >
+          Home
+        </Link>
+
+        <Link
+          to="/pdf-job-match"
+          className={location.pathname === "/pdf-job-match" ? "active" : ""}
+        >
+          ATS Matcher
+        </Link>
+      </div>
+
+    </div>
+  );
 }
