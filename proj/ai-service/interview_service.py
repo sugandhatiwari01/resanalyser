@@ -180,12 +180,16 @@ def evaluate_answer(req: EvaluateAnswerRequest):
     try:
         transcript = req.transcript.strip()
 
-
+        # 🚨 Very short answer check
         if not transcript or len(transcript.split()) < 5:
-            return {"technicalScore": 0, "clarityScore": 0, "overallScore": 0,
-                    "feedback": "Answer too short or unclear"}
+            return {
+                "technicalScore": 0,
+                "clarityScore": 0,
+                "overallScore": 0,
+                "feedback": "Answer too short or unclear"
+            }
 
-        # ── All local, no API ─────────────────────────────────
+        # ── Analysis ───────────────────────────────
         analysis = analyze_answer(transcript, req.duration)
         q_type   = classify_question(req.question)
 
@@ -193,41 +197,77 @@ def evaluate_answer(req: EvaluateAnswerRequest):
         sem_comp  = completeness_score(transcript, req.question)
         sem_depth = depth_score(transcript)
 
-        # All inputs 0–1
         struct     = analysis["structure"]["score"]
         star       = analysis["star"]["score"]
         confidence = analysis["confidenceScore"]
 
+        # ── Raw scoring ───────────────────────────
         if q_type == "behavioral":
             technical_raw = star * 0.5 + struct * 0.3 + sem_depth * 0.2
         else:
             technical_raw = struct * 0.3 + sem_rel * 0.4 + sem_depth * 0.3
 
-        clarity_raw   = confidence * 0.5 + sem_comp * 0.5
+        clarity_raw = confidence * 0.5 + sem_comp * 0.5
 
-        technical_score = round(technical_raw * 10, 1)
-        clarity_score   = round(clarity_raw   * 10, 1)
-        overall_score   = round(technical_score * 0.6 + clarity_score * 0.4, 1)
+        # ── 🚨 FIX 1: Penalize weak answers ───────
+        word_count = len(transcript.split())
 
-        # ── LLM: wording feedback only ────────────────────────
+        if word_count < 15:
+            technical_score = 1
+            clarity_score = 2
+            overall_score = 1.5
+
+        elif word_count < 30:
+            technical_score = round(technical_raw * 5, 1)
+            clarity_score = round(clarity_raw * 6, 1)
+            overall_score = round((technical_score + clarity_score) / 2, 1)
+
+        else:
+            technical_score = round(technical_raw * 10, 1)
+            clarity_score = round(clarity_raw * 10, 1)
+            overall_score = round(technical_score * 0.6 + clarity_score * 0.4, 1)
+
+        # ── 🚨 FIX 2: STRICT FEEDBACK ─────────────
         try:
             prompt = f"""
-You are an interview coach.
+You are an interview evaluator.
 
-Question type: {q_type}
-Scores (0–1): structure={struct}, STAR={star}, confidence={confidence},
-              relevance={sem_rel}, completeness={sem_comp}, depth={sem_depth}
-Rule-based flags: {analysis["feedback"]}
+Question:
+{req.question}
 
-Write:
-- 2 specific strengths
-- 2 specific improvements
-- 1 closing encouragement line
-Be concise. Do not mention numbers.
+Candidate Answer:
+{transcript}
+
+Evaluation metrics:
+- structure={struct}
+- STAR={star}
+- confidence={confidence}
+- relevance={sem_rel}
+- completeness={sem_comp}
+- depth={sem_depth}
+
+Rules:
+- If answer is weak, DO NOT praise it
+- If no technical content, DO NOT mention technical strengths
+- Be strict and realistic
+
+Output EXACTLY in this format:
+
+**Strengths:**
+1. ...
+2. ...
+
+**Improvements:**
+1. ...
+2. ...
+
+**Closing encouragement:**
+...
 """
             ai_feedback = groq_chat(prompt, temperature=0.3)
+
         except Exception:
-            ai_feedback = "Good attempt. Focus on structure and include measurable outcomes."
+            ai_feedback = "Answer lacks depth. Try structuring better and adding examples."
 
         return {
             "technicalScore": technical_score,
@@ -245,7 +285,6 @@ Be concise. Do not mention numbers.
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/aggregate-scores")
 def aggregate_scores(req: SaveReportRequest):

@@ -73,6 +73,7 @@ export function useMockInterview() {
       });
 
       // ── 2c. Build answer with faceReport ──────────────────────────────────
+      console.log("FACE REPORT:", faceReport);
       const newAnswer = {
         questionId: question.id,
         question: question.question,

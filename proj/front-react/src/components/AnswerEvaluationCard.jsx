@@ -39,6 +39,38 @@
 //     onRecordingComplete(audioBlob, videoBlob, faceReport)   ← 3 args
 
 import { useState } from "react";
+const getDynamicTips = (faceReport) => {
+  if (!faceReport) return ["No facial insights available"];
+
+  const tips = [];
+
+  const confidence = faceReport.overallConfidence || 0;
+  const stress = faceReport.avgStress || 0;
+  const peak = faceReport.peakStress || 0;
+  const mood = faceReport.dominantMood || "";
+
+  if (confidence < 50) {
+    tips.push("Your confidence appears low — improve posture and eye contact.");
+  }
+
+  if (stress > 40 || peak > 60) {
+    tips.push("You appear stressed — slow your speech and breathe steadily.");
+  }
+
+  if (mood.toLowerCase().includes("neutral")) {
+    tips.push("Try to be more expressive — slight smiles improve engagement.");
+  }
+
+  if (confidence > 80 && stress < 20) {
+    tips.push("Excellent composure and confidence — keep it consistent.");
+  }
+
+  if (tips.length === 0) {
+    tips.push("Stable presence, but could be more expressive.");
+  }
+
+  return tips;
+};
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const colors = {
@@ -236,9 +268,19 @@ export default function AnswerEvaluationCard({ answer, index }) {
     i: evaluation.improvements || [],
   };
   const parsed = parseFeedback(feedback);
-  const finalStrengths = provided.s.length > 0 ? provided.s : parsed.strengths;
-  const finalImprovements = provided.i.length > 0 ? provided.i : parsed.improvements;
+  const finalStrengths =
+  provided.s.length > 0
+    ? provided.s
+    : parsed.strengths.length > 0
+    ? parsed.strengths
+    : ["Your answer needs more clarity and structure."];
 
+const finalImprovements =
+  provided.i.length > 0
+    ? provided.i
+    : parsed.improvements.length > 0
+    ? parsed.improvements
+    : ["Add more specific examples and technical depth."];
   const cleanFeedback =
     parsed.closing ||
     feedback
@@ -251,9 +293,10 @@ export default function AnswerEvaluationCard({ answer, index }) {
   // ── Facial report derived values ─────────────────────────────────────────
   const hasFace = faceReport && typeof faceReport === "object";
   const confLabel = hasFace
-    ? faceReport.overallConfidence >= 70 ? "High"
-      : faceReport.overallConfidence >= 40 ? "Moderate" : "Low"
-    : "";
+  ? faceReport.overallConfidence >= 80 ? "High"
+  : faceReport.overallConfidence >= 50 ? "Moderate"
+  : "Low"
+  : "";
   const stressLabel = hasFace
     ? faceReport.avgStress > 50 ? "High"
       : faceReport.avgStress > 25 ? "Mild" : "Calm"
@@ -509,7 +552,7 @@ boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
             }}>
               <div style={{
                 fontSize: 24, fontWeight: 800,
-                color: "rgba(255,255,255,0.75)", lineHeight: 1,
+                color: colors.text, lineHeight: 1,
               }}>
                 {faceReport.samplesAnalyzed ?? 0}
               </div>
@@ -585,7 +628,7 @@ boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
           )}
 
           {/* Body language tips */}
-          {faceReport.tips?.length > 0 && (
+          {faceReport && (
             <div style={{
               background: "rgba(255,255,255,0.03)",
               border: `1px solid rgba(255,255,255,0.06)`,
@@ -600,15 +643,17 @@ boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
                 💡 Body Language Tips
               </p>
               <ul style={{ margin: 0, paddingLeft: 16 }}>
-                {faceReport.tips.map((tip, i) => (
-                  <li key={i} style={{
-                    fontSize: 12, color: "#94a3b8",
-                    lineHeight: 1.7, marginBottom: 2,
-                  }}>
-                    {tip}
-                  </li>
-                ))}
-              </ul>
+  {getDynamicTips(faceReport).map((tip, i) => (
+    <li key={i} style={{
+      fontSize: 12,
+      color: "#94a3b8",
+      lineHeight: 1.7,
+      marginBottom: 2,
+    }}>
+      {tip}
+    </li>
+  ))}
+</ul>
             </div>
           )}
         </div>
