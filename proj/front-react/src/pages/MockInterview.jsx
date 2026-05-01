@@ -6,13 +6,16 @@ import { useState } from "react";
 import { useMockInterview } from "../hooks/useMockInterview";
 import VideoRecorder from "../components/VideoRecorder";
 import AnswerEvaluationCard from "../components/AnswerEvaluationCard";
+import { downloadReport } from "../utils/downloadReport";
 
 import { useLocation } from "react-router-dom";
 
 export default function MockInterview() {
   const location = useLocation();
   const resumeText = location.state?.resumeText || "";
-  const jobDescription = location.state?.jobDescription || "";  const {
+  const jobDescription = location.state?.jobDescription || "";
+
+  const {
     step,
     questions,
     currentIndex,
@@ -27,19 +30,28 @@ export default function MockInterview() {
   } = useMockInterview();
 
   const [numQuestions, setNumQuestions] = useState(5);
-  const [pendingAudio, setPendingAudio] = useState(null); // audio blob from recorder
+  const [pendingAudio, setPendingAudio] = useState(null);
+  const [pendingFaceReport, setPendingFaceReport] = useState(null); // ← ADD THIS
   const [submitted, setSubmitted] = useState(false);
 
-  const handleRecordingComplete = (audioBlob) => {
+  // ── FIX: accept all 3 args from VideoRecorder ──────────────────────────────
+  const handleRecordingComplete = (audioBlob, videoBlob, faceReport) => {
+    console.log("🎥 MockInterview received faceReport:", faceReport); // ← add
     setPendingAudio(audioBlob);
+    setPendingFaceReport(faceReport);
     setSubmitted(false);
   };
 
+  // ── FIX: pass faceReport as 3rd arg to submitAnswer ───────────────────────
   const handleSubmitAnswer = async () => {
+
     if (!pendingAudio) return;
+    console.log("📤 pendingFaceReport at submit time:", pendingFaceReport);
     setSubmitted(true);
+    const face = pendingFaceReport;    // ← capture before clearing
     setPendingAudio(null);
-    await submitAnswer(pendingAudio, jobDescription);
+    setPendingFaceReport(null);        // ← ADD THIS
+    await submitAnswer(pendingAudio, jobDescription, face);  // ← ADD face
     setSubmitted(false);
   };
 
@@ -205,9 +217,14 @@ export default function MockInterview() {
           {reportId && (
             <button
               style={{ ...styles.primaryBtn, background: "#48bb78" }}
-              onClick={() => window.open(`/api/interview/report/${reportId}`, "_blank")}
+              onClick={() => downloadReport({
+                answers,
+                aggregateScore,
+                jobDescription,
+                candidateName: "", // optional — pass user's name if you have it
+              })}
             >
-              📥 Download Report
+              📥 Download PDF Report
             </button>
           )}
         </div>
