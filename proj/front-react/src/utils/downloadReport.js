@@ -57,13 +57,14 @@ function rRect(doc, x, y, w, h, r, style = "F") {
 
 // Draw a horizontal score bar
 function scoreBar(doc, x, y, w, h, score) {
-    // track
-    setFill(doc, C.slate3);
-    rRect(doc, x, y, w, h, h / 2);
-    // fill
-    const pct = Math.min(score / 10, 1);
+    // background
+    setFill(doc, [220, 220, 220]);
+    doc.rect(x, y, w, h, "F");
+
+    // filled part
+    const pct = Math.max(0, Math.min(score / 10, 1));
     setFill(doc, scoreColor(score));
-    rRect(doc, x, y, w * pct, h, h / 2);
+    doc.rect(x, y, w * pct, h, "F");
 }
 
 // Add a new page and return the starting Y
@@ -158,20 +159,12 @@ function miniGauge(doc, cx, cy, r, pct, color, label, sublabel) {
 
 // ── Expression bar row ─────────────────────────────────────────────────────────
 function exprRow(doc, x, y, expr, val, color) {
-    const emoji = { happy: "Happy", neutral: "Neutral", surprised: "Surprised", sad: "Sad", fearful: "Fearful", disgusted: "Disgusted", angry: "Angry" };
     const pct = Math.round(val * 100);
+
     setFont(doc, "normal", 7);
     setTxt(doc, C.slate5);
-    doc.text(emoji[expr] || expr, x, y);
-    // bar track
-    const bx = x + 30, bw = 60, bh = 2.5;
-    setFill(doc, C.slate3);
-    rRect(doc, bx, y - 2.5, bw, bh, 1);
-    setFill(doc, color);
-    rRect(doc, bx, y - 2.5, bw * (pct / 100), bh, 1);
-    setFont(doc, "bold", 7);
-    setTxt(doc, color);
-    doc.text(`${pct}%`, bx + bw + 3, y);
+    doc.text(`${expr}: ${pct}%`, x, y);
+
     return y + 5;
 }
 
@@ -238,9 +231,9 @@ export async function downloadReport({ answers = [], aggregateScore = {}, jobDes
         { label: "Clarity", value: aggregateScore?.clarityAvg ?? 0 },
         { label: "Overall", value: aggregateScore?.overallAvg ?? 0 },
     ];
-    const boxW = (CONTENT_W - 12) / 3;
+    const boxW = (CONTENT_W - 20) / 3;
     metrics.forEach((m, i) => {
-        const bx = PAD + 6 + i * (boxW + 4);
+        const bx = PAD + 6 + i * (boxW + 3);
         const by = y + 20;
         setFill(doc, scoreBg(m.value));
         rRect(doc, bx, by, boxW, 18, 3);
@@ -276,13 +269,15 @@ export async function downloadReport({ answers = [], aggregateScore = {}, jobDes
         y = checkY(doc, y, 14);
         const bg = i % 2 === 0 ? C.white : C.slate1;
         setFill(doc, bg);
-        doc.rect(PAD, y, CONTENT_W, 12, "F");
+        doc.rect(PAD, y, CONTENT_W, 16, "F");
 
         const qText = doc.splitTextToSize(a.question || "", 105);
         setFont(doc, "normal", 7);
         setTxt(doc, C.slate9);
         doc.text(`${i + 1}`, PAD + 3, y + 5);
-        doc.text(qText[0] + (qText.length > 1 ? "…" : ""), PAD + 10, y + 5);
+        const lines = doc.splitTextToSize(a.question || "", 100);
+doc.text(lines.slice(0, 2), PAD + 10, y + 5);
+        y += 1;
 
         const ev = a.evaluation || {};
         scoreChip(doc, PAD + 118, y + 3, ev.technicalScore ?? 0, "");
@@ -295,10 +290,10 @@ export async function downloadReport({ answers = [], aggregateScore = {}, jobDes
             const confColor = conf >= 70 ? C.green : conf >= 40 ? C.amber : C.red;
             setFont(doc, "bold", 6);
             setTxt(doc, confColor);
-            doc.text(`😊 ${conf}%`, PAD + 170, y + 5);
+            doc.text(` ${conf}%`, PAD + 170, y + 5);
         }
 
-        y += 12;
+        y += 16;
     });
 
     y += 6;
@@ -416,49 +411,6 @@ export async function downloadReport({ answers = [], aggregateScore = {}, jobDes
             y += fbH + 4;
         }
 
-        // ── Strengths / Improvements side by side ─────────────────────────────
-        const strengths = ev.strengths || [];
-        const improvements = ev.improvements || [];
-        if (strengths.length || improvements.length) {
-            y = checkY(doc, y, 30);
-            const colW = (CONTENT_W - 4) / 2;
-
-            // Strengths
-            setFill(doc, C.greenLt);
-            rRect(doc, PAD, y, colW, 6, 2);
-            setFont(doc, "bold", 7.5);
-            setTxt(doc, C.green);
-            doc.text("✅  Strengths", PAD + 3, y + 4.5);
-            let sy = y + 9;
-            strengths.slice(0, 4).forEach(s => {
-                sy = checkY(doc, sy, 6);
-                setFont(doc, "normal", 7);
-                setTxt(doc, C.slate7);
-                const sl = doc.splitTextToSize(`• ${s}`, colW - 4);
-                doc.text(sl, PAD + 3, sy);
-                sy += sl.length * 4 + 1;
-            });
-
-            // Improvements
-            const ix = PAD + colW + 4;
-            setFill(doc, C.amberLt);
-            rRect(doc, ix, y, colW, 6, 2);
-            setFont(doc, "bold", 7.5);
-            setTxt(doc, C.amber);
-            doc.text("💡  Improve", ix + 3, y + 4.5);
-            let iy = y + 9;
-            improvements.slice(0, 4).forEach(imp => {
-                iy = checkY(doc, iy, 6);
-                setFont(doc, "normal", 7);
-                setTxt(doc, C.slate7);
-                const il = doc.splitTextToSize(`• ${imp}`, colW - 4);
-                doc.text(il, ix + 3, iy);
-                iy += il.length * 4 + 1;
-            });
-
-            y = Math.max(sy, iy) + 6;
-        }
-
         // ── FACIAL ANALYSIS ───────────────────────────────────────────────────
         if (fr) {
             y = checkY(doc, y, 60);
@@ -470,19 +422,65 @@ export async function downloadReport({ answers = [], aggregateScore = {}, jobDes
 
             setFont(doc, "bold", 7.5);
             setTxt(doc, [100, 110, 160]);
-            doc.text("🧠  FACIAL ANALYSIS — THIS QUESTION", PAD + 4, y + 7);
+            doc.text("FACIAL ANALYSIS — THIS QUESTION", PAD + 4, y + 7);
 
             // Confidence gauge
-            const confPct = (fr.overallConfidence ?? 0) / 100;
-            const confC = fr.overallConfidence >= 70 ? C.teal : fr.overallConfidence >= 40 ? C.orange : C.red;
-            miniGauge(doc, PAD + 22, y + 28, 13, confPct, confC,
-                "Confidence", fr.overallConfidence >= 70 ? "High" : fr.overallConfidence >= 40 ? "Moderate" : "Low");
+            
+            //miniGauge(doc, PAD + 22, y + 28, 13, confPct, confC,
+                //"Confidence", fr.overallConfidence >= 70 ? "High" : fr.overallConfidence >= 40 ? "Moderate" : "Low");
+                setFont(doc, "normal", 7);
+setTxt(doc, [200, 210, 240]);
+
+const conf = fr.overallConfidence ?? 0;
+const stress = fr.avgStress ?? 0;
+const peak = fr.peakStress ?? 0;
+
+let barY = y + 16;   // 🔥 single base line
+
+// Confidence
+doc.setFont("helvetica", "normal");
+doc.setFontSize(7);
+doc.setTextColor(220, 220, 220);
+doc.text(`Confidence: ${conf}%`, PAD + 4, barY);
+
+doc.setFillColor(70, 70, 90);
+doc.rect(PAD + 4, barY + 3, 70, 3, "F");
+
+doc.setFillColor(0, 200, 150);
+doc.rect(PAD + 4, barY + 3, (70 * conf) / 100, 3, "F");
+
+// Stress
+barY += 10;
+
+doc.text(`Stress: ${stress}%`, PAD + 4, barY);
+
+doc.setFillColor(70, 70, 90);
+doc.rect(PAD + 4, barY + 3, 70, 3, "F");
+
+doc.setFillColor(255, 140, 0);
+doc.rect(PAD + 4, barY + 3, (70 * stress) / 100, 3, "F");
+
+// Peak Stress
+barY += 10;
+
+doc.text(`Peak Stress: ${peak}%`, PAD + 4, barY);
+
+doc.setFillColor(70, 70, 90);
+doc.rect(PAD + 4, barY + 3, 70, 3, "F");
+
+doc.setFillColor(220, 50, 50);
+doc.rect(PAD + 4, barY + 3, (70 * peak) / 100, 3, "F");
+
+// Frames
+barY += 10;
+doc.text(`Frames: ${fr.samplesAnalyzed ?? 0}`, PAD + 4, barY);
+barY += 6; 
 
             // Stress gauge
-            const stPct = (fr.avgStress ?? 0) / 100;
-            const stC = fr.avgStress > 50 ? C.red : fr.avgStress > 25 ? C.orange : C.teal;
-            miniGauge(doc, PAD + 62, y + 28, 13, stPct, stC,
-                "Avg Stress", fr.avgStress > 50 ? "High" : fr.avgStress > 25 ? "Mild" : "Calm");
+            
+            //miniGauge(doc, PAD + 62, y + 28, 13, stPct, stC,
+                //"Avg Stress", fr.avgStress > 50 ? "High" : fr.avgStress > 25 ? "Mild" : "Calm");
+                
 
             // Frames badge
             setFill(doc, [25, 30, 45]);
@@ -526,7 +524,7 @@ export async function downloadReport({ answers = [], aggregateScore = {}, jobDes
                 let ty = y + cardH - fr.tips.length * 5 - 6;
                 setFont(doc, "bold", 6.5);
                 setTxt(doc, [100, 110, 160]);
-                doc.text("💡  BODY LANGUAGE TIPS", PAD + 4, ty);
+                doc.text("BODY LANGUAGE TIPS", PAD + 4, ty);
                 ty += 5;
                 fr.tips.forEach(tip => {
                     setFont(doc, "normal", 6.5);
