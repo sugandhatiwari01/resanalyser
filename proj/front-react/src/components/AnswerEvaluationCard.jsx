@@ -457,49 +457,6 @@ boxShadow: "0 4px 12px rgba(0,0,0,0.04)",
         </p>
       )}
 
-      {/* ── Strengths / Improvements ──────────────────────────────────────── */}
-      <div style={{
-        display: "grid", gridTemplateColumns: "1fr 1fr",
-        gap: 20, marginBottom: 16,
-      }}>
-        <div style={{
-          background: colors.successBg,
-          border: `1px solid ${colors.successBorder}`,
-          borderRadius: 10, padding: "12px 14px",
-        }}>
-          <p style={{
-            fontWeight: 700, fontSize: 11,
-            color: colors.successText, margin: "0 0 8px",
-            textTransform: "uppercase", letterSpacing: "0.05em",
-          }}>
-            ✅ Strengths
-          </p>
-          <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: colors.success, lineHeight: 1.7 }}>
-            {finalStrengths.length > 0
-              ? finalStrengths.map((s, i) => <li key={i}>{s}</li>)
-              : <li style={{ color: colors.textLight }}>See feedback above</li>}
-          </ul>
-        </div>
-        <div style={{
-          background: colors.warningBg,
-          border: `1px solid ${colors.warningBorder}`,
-          borderRadius: 10, padding: "12px 14px",
-        }}>
-          <p style={{
-            fontWeight: 700, fontSize: 11,
-            color: colors.warningText, margin: "0 0 8px",
-            textTransform: "uppercase", letterSpacing: "0.05em",
-          }}>
-            💡 Improve
-          </p>
-          <ul style={{ margin: 0, paddingLeft: 16, fontSize: 12, color: colors.warning, lineHeight: 1.7 }}>
-            {finalImprovements.length > 0
-              ? finalImprovements.map((s, i) => <li key={i}>{s}</li>)
-              : <li style={{ color: colors.textLight }}>See feedback above</li>}
-          </ul>
-        </div>
-      </div>
-
       {/* ══ FACIAL ANALYSIS SECTION ═════════════════════════════════════════ */}
       {hasFace ? (
         <div style={{
